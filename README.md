@@ -69,6 +69,14 @@ func main(){
 }
 ```
 
+
+The example will output:
+
+```
+base58encode([0 0 0 1 2 3]) = 111Ldp
+base58decode(111Ldp) = [0 0 0 1 2 3]
+```
+
 ## Alphabet
 
 This package provide some common alphabet(copyed from https://en.wikipedia.org/wiki/Base58):

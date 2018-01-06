@@ -45,17 +45,24 @@ func main(){
 	
 	// 编码
 	input := []byte{0,0,0,1,2,3}
-	var encodedString string = Encode(input, myAlphabet)
+	var encodedString string = base58.Encode(input, myAlphabet)
 	fmt.Printf("base58encode(%v) = %s\n", input, encodedString)
 	
 	// 解码， 如果输入的字符中有符号表中不含的字符会返回错误
-	decodedBytes, err := Decode(encodedString, myAlphabet)
+	decodedBytes, err := base58.Decode(encodedString, myAlphabet)
 	if err != nil {
 		fmt.Println("error occurred: ", err)
 	}else{
 		fmt.Printf("base58decode(%s) = %v\n", encodedString, decodedBytes)
 	}	
 }
+```
+
+示例输出如下：
+
+```
+base58encode([0 0 0 1 2 3]) = 111Ldp
+base58decode(111Ldp) = [0 0 0 1 2 3]
 ```
 
 ## 符号表
