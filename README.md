@@ -1,6 +1,14 @@
 
 Chinese document 中文文档参看 [README_zh.md](README_zh.md)
 
+## Features
+
+ * Fast and lightweight
+ * API simple
+ * support some common alphabet: Bitcoin, IPFS, Flickr, Ripple
+ * can custom alphabet
+ * custom alphabet can be unicode string
+
 ## base58 algorithm
 
 Wikipedia:
