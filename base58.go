@@ -74,14 +74,26 @@ func Encode(input []byte, alphabet *Alphabet)string{
 	}
 
 	encodeTable := alphabet.encodeTable
-	retStrRunes := make([]rune, prefixZeroes + (capacity-1-outputReverseEnd))
-	for i := 0; i < prefixZeroes; i++ {
-		retStrRunes[i] = encodeTable[0]
+	// when not contains unicode, use []byte to improve performance
+	if len(alphabet.unicodeDecodeTable) == 0 { 
+		retStrBytes := make([]byte, prefixZeroes + (capacity-1-outputReverseEnd))
+		for i := 0; i < prefixZeroes; i++ {
+			retStrBytes[i] = byte(encodeTable[0])
+		}
+		for i, n := range output[outputReverseEnd+1:] {
+			retStrBytes[prefixZeroes+i] = byte(encodeTable[n])
+		}
+		return string(retStrBytes)
+	}else{
+		retStrRunes := make([]rune, prefixZeroes + (capacity-1-outputReverseEnd))
+		for i := 0; i < prefixZeroes; i++ {
+			retStrRunes[i] = encodeTable[0]
+		}
+		for i, n := range output[outputReverseEnd+1:] {
+			retStrRunes[prefixZeroes+i] = encodeTable[n]
+		}
+		return string(retStrRunes)
 	}
-	for i, n := range output[outputReverseEnd+1:] {
-		retStrRunes[prefixZeroes+i] = encodeTable[n]
-	}
-	return string(retStrRunes)	
 }
 
 // Decode with custom alphabet
