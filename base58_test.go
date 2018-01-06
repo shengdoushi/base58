@@ -10,6 +10,31 @@ import (
 	"math/rand"
 )
 
+func TestAlphabetImplStringer(t *testing.T){
+	// interface: Stringer {String()}
+	alphabetStr := "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+	alphabet := NewAlphabet(alphabetStr)
+	if alphabet.String() != alphabetStr {
+		t.Errorf("alphabet.String() should be %s, but %s", alphabetStr, alphabet.String())
+	}
+}
+
+func TestAlphabetFix58Length(t *testing.T){
+	crashed := false
+	alphabetStr := "sfdjskdf"
+
+	defer func(){
+		if err := recover(); err != nil {
+			crashed = true
+		}
+		if !crashed {
+			t.Errorf("NewAlphabet(%s) should crash, but ok", alphabetStr)
+		}
+	}()
+
+	NewAlphabet(alphabetStr)
+}
+
 func TestUnicodeAlphabet(t *testing.T){
 	myAlphabet := NewAlphabet("一二三四五六七八九十壹贰叁肆伍陆柒捌玖零拾佰仟万亿圆甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥金木水火土雷电风雨福")
 

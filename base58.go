@@ -21,6 +21,10 @@ type Alphabet struct {
 	unicodeDecodeTable []rune
 }
 
+func (alphabet Alphabet) String() string {
+	return string(alphabet.encodeTable[:])
+}
+
 func NewAlphabet(alphabet string)*Alphabet{
 	alphabetRunes := []rune(alphabet)
 	if len(alphabetRunes) != 58 {
