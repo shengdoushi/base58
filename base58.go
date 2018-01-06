@@ -17,6 +17,8 @@ var (
 
 type Alphabet struct {
 	encodeTable [58]rune
+	decodeTable [256]int
+	unicodeDecodeTable []rune
 }
 
 func NewAlphabet(alphabet string)*Alphabet{
@@ -26,8 +28,18 @@ func NewAlphabet(alphabet string)*Alphabet{
 	}
 
 	ret := new(Alphabet)
-	for idx := 0; idx < 58; idx++ {
-		ret.encodeTable[idx] = alphabetRunes[idx]
+	for i, _ := range ret.decodeTable {
+		ret.decodeTable[i] = -1
+	}
+	ret.unicodeDecodeTable = make([]rune, 0, 58 * 2)
+	for idx, ch := range alphabetRunes {
+		ret.encodeTable[idx] = ch
+		if ch >= 0 && ch < 256 {
+			ret.decodeTable[byte(ch)] = idx
+		}else{
+			ret.unicodeDecodeTable = append(ret.unicodeDecodeTable, ch)
+			ret.unicodeDecodeTable = append(ret.unicodeDecodeTable, rune(idx))
+		}
 	}
 	return ret
 }
@@ -41,7 +53,7 @@ func Encode(input []byte, alphabet *Alphabet)string{
 		prefixZeroes++
 	}
 
-	capacity := len(input) * 138 / 100 + 1 // log256 / log58
+	capacity := inputLength * 138 / 100 + 1 // log256 / log58
 	output := make([]byte, capacity)
 	outputReverseEnd := capacity-1
 
@@ -50,19 +62,20 @@ func Encode(input []byte, alphabet *Alphabet)string{
 
 		outputIdx := capacity-1
 		for ; carry != 0 || outputIdx > outputReverseEnd ; outputIdx-- {
-			carry += 256 * uint32(output[outputIdx])
+			carry += (uint32(output[outputIdx]) << 8) // XX << 8 same as: 256 * XX
 			output[outputIdx] = byte(carry % 58)
 			carry /= 58
 		}
 		outputReverseEnd= outputIdx
 	}
 
+	encodeTable := alphabet.encodeTable
 	retStrRunes := make([]rune, prefixZeroes + (capacity-1-outputReverseEnd))
 	for i := 0; i < prefixZeroes; i++ {
-		retStrRunes[i] = alphabet.encodeTable[0]
+		retStrRunes[i] = encodeTable[0]
 	}
-	for i := outputReverseEnd+1; i < capacity; i++{
-		retStrRunes[prefixZeroes+i-(outputReverseEnd+1)] = alphabet.encodeTable[output[i]]
+	for i, n := range output[outputReverseEnd+1:] {
+		retStrRunes[prefixZeroes+i] = encodeTable[n]
 	}
 	return string(retStrRunes)	
 }
@@ -70,43 +83,47 @@ func Encode(input []byte, alphabet *Alphabet)string{
 // Decode with custom alphabet
 func Decode(input string, alphabet *Alphabet)([]byte, error){
 	inputBytes := []rune(input)
-	// pass first char
-	capacity := len(inputBytes) * 733 /1000 + 1; // log(58) / log(256)
+	inputLength := len(inputBytes)
+	capacity := inputLength * 733 /1000 + 1; // log(58) / log(256)
 	output := make([]byte, capacity)
 	outputReverseEnd := capacity-1
 
 	// prefix 0
 	zero58Byte := alphabet.encodeTable[0]
-	inputLength := len(inputBytes)
-	prefixZeroes := 0
+	prefixZeroes := 0	
 	for prefixZeroes < inputLength && inputBytes[prefixZeroes] == zero58Byte {
 		prefixZeroes++
 	}
 
-	for inputPos := prefixZeroes; inputPos < inputLength; inputPos++{
+	for inputPos := 0; inputPos < inputLength; inputPos++{
 		carry := -1
-		for i := 0; i < 58; i++ {
-			if alphabet.encodeTable[i] == inputBytes[inputPos] {
-				carry = i
-				break
+		target := inputBytes[inputPos]
+		if target >= 0 && target < 256 {
+			carry = alphabet.decodeTable[target]
+		}else{					// unicode
+			for i := 0; i < len(alphabet.unicodeDecodeTable); i += 2 {
+				if alphabet.unicodeDecodeTable[i] == target {
+					carry = int(alphabet.unicodeDecodeTable[i+1])
+					break
+				}
 			}
 		}
 		if carry == -1 {
 			return nil, Error_InvalidBase58String
 		}
-
+		
 		outputIdx := capacity-1
 		for ; carry != 0 || outputIdx > outputReverseEnd ; outputIdx-- {
 			carry += 58 * int(output[outputIdx])
-			output[outputIdx] = byte(carry % 256)
-			carry /= 256
+			output[outputIdx] = byte(uint32(carry) & 0xff) // same as: byte(uint32(carry) % 256)
+			carry >>= 8			// same as: carry /= 256
 		}
 		outputReverseEnd= outputIdx
 	}
 
 	retBytes := make([]byte, prefixZeroes + (capacity-1-outputReverseEnd))
-	for i := outputReverseEnd+1; i < capacity; i++{
-		retBytes[prefixZeroes+i-(outputReverseEnd+1)] = output[i]
+	for i, n := range output[outputReverseEnd+1:] {
+		retBytes[prefixZeroes+i] = n
 	}
 	return retBytes, nil
 }

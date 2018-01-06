@@ -72,6 +72,31 @@ func TestRandCases(t *testing.T){
 	}
 }
 
+
+// test: [0]: input bytes  [1]: encoded string
+var testCases [][][]byte
+func init() {
+	caseCount := 1000000
+	testCases = make([][][]byte, caseCount)
+	for i := 0; i < caseCount; i++ {
+		data := make([]byte, 32)
+		rand.Read(data)
+		testCases[i] = [][]byte{data, []byte(Encode(data, BitcoinAlphabet))}
+	}
+}
+
+func BenchmarkEncode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Encode([]byte(testCases[i%len(testCases)][0]), BitcoinAlphabet)
+	}
+}
+
+func BenchmarkDecode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Decode(string(testCases[i%len(testCases)][1]), BitcoinAlphabet)
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // redix trans
 func redixTrans256and58(input []byte, fromRedix uint32, toRedix uint32)([]byte, error){
