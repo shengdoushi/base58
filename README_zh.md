@@ -16,6 +16,17 @@
 go get -u github.com/shengdoushi/base58
 ```
 
+## API
+
+提供了 2 个API:
+
+```
+// 编码
+func Encode(input []byte, alphabet *Alphabet)string
+
+// 解码
+func Decode(input string, alphabet *Alphabet)([]byte, error)
+```
 
 ## 使用
 

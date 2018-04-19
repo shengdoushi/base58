@@ -28,6 +28,18 @@ Base58Check is a Base58 encoding format that unambiguously encodes the type of d
 go get -u github.com/shengdoushi/base58
 ```
 
+## API
+
+just 2 API:
+
+```
+// encode with custom alphabet
+func Encode(input []byte, alphabet *Alphabet)string
+
+// Decode with custom alphabet
+func Decode(input string, alphabet *Alphabet)([]byte, error)
+```
+
 ## Usage
 
 ```golang
