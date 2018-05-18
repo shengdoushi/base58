@@ -80,7 +80,7 @@ func main(){
 	fmt.Printf("base58encode(%v) = %s\n", input, encodedString)
 	
 	// decode
-	decodedBytes, err := baes58.Decode(encodedString, myAlphabet)
+	decodedBytes, err := base58.Decode(encodedString, myAlphabet)
 	if err != nil { // error occurred when encodedString contains character not in alphabet
 		fmt.Println("error occurred: ", err)
 	}else{
