@@ -9,6 +9,10 @@ Chinese document 中文文档参看 [README_zh.md](README_zh.md)
  * can custom alphabet
  * custom alphabet can be unicode string
 
+## API Doc
+
+[Godoc](https://www.godoc.org/github.com/shengdoushi/base58)
+
 ## base58 algorithm
 
 Wikipedia:

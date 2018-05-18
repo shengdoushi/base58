@@ -15,16 +15,20 @@ var (
 	RippleAlphabet = NewAlphabet("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz")
 )
 
+// The base58 alphabet object.
 type Alphabet struct {
 	encodeTable [58]rune
 	decodeTable [256]int
 	unicodeDecodeTable []rune
 }
 
+// Alphabet's string representation
 func (alphabet Alphabet) String() string {
 	return string(alphabet.encodeTable[:])
 }
 
+// Create a custom alphabet from 58-length string.
+// Note: len(rune(alphabet)) must be 58.
 func NewAlphabet(alphabet string)*Alphabet{
 	alphabetRunes := []rune(alphabet)
 	if len(alphabetRunes) != 58 {
@@ -48,7 +52,7 @@ func NewAlphabet(alphabet string)*Alphabet{
 	return ret
 }
 
-// encode with custom alphabet
+// Encode with custom alphabet
 func Encode(input []byte, alphabet *Alphabet)string{
 	// prefix 0
 	inputLength := len(input)
