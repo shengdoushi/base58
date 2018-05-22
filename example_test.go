@@ -14,7 +14,7 @@ func Example_basic(){
 	
 	// encode
 	input := []byte{0,0,0,1,2,3}
-	var encodedString string = base58.Encode(input, myAlphabet)
+	encodedString := base58.Encode(input, myAlphabet)
 	fmt.Printf("base58encode(%v) = %s\n", input, encodedString)
 	
 	// decode

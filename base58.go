@@ -5,17 +5,20 @@ import (
 	"fmt"
 )
 
+// Errors
 var (
-	Error_InvalidBase58String error = errors.New("invalid base58 string")
+	ErrorInvalidBase58String = errors.New("invalid base58 string")
+)
 
-	// Alphabet: copy from https://en.wikipedia.org/wiki/Base58
+// Alphabet: copy from https://en.wikipedia.org/wiki/Base58
+var (
 	BitcoinAlphabet = NewAlphabet("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz")
 	IPFSAlphabet = NewAlphabet("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz")
 	FlickrAlphabet = NewAlphabet("123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ")
 	RippleAlphabet = NewAlphabet("rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz")
 )
 
-// The base58 alphabet object.
+// Alphabet The base58 alphabet object.
 type Alphabet struct {
 	encodeTable [58]rune
 	decodeTable [256]int
@@ -27,7 +30,7 @@ func (alphabet Alphabet) String() string {
 	return string(alphabet.encodeTable[:])
 }
 
-// Create a custom alphabet from 58-length string.
+// NewAlphabet create a custom alphabet from 58-length string.
 // Note: len(rune(alphabet)) must be 58.
 func NewAlphabet(alphabet string)*Alphabet{
 	alphabetRunes := []rune(alphabet)
@@ -36,7 +39,7 @@ func NewAlphabet(alphabet string)*Alphabet{
 	}
 
 	ret := new(Alphabet)
-	for i, _ := range ret.decodeTable {
+	for i := range ret.decodeTable {
 		ret.decodeTable[i] = -1
 	}
 	ret.unicodeDecodeTable = make([]rune, 0, 58 * 2)
@@ -52,7 +55,7 @@ func NewAlphabet(alphabet string)*Alphabet{
 	return ret
 }
 
-// Encode with custom alphabet
+// Encode encode with custom alphabet
 func Encode(input []byte, alphabet *Alphabet)string{
 	// prefix 0
 	inputLength := len(input)
@@ -88,19 +91,18 @@ func Encode(input []byte, alphabet *Alphabet)string{
 			retStrBytes[prefixZeroes+i] = byte(encodeTable[n])
 		}
 		return string(retStrBytes)
-	}else{
-		retStrRunes := make([]rune, prefixZeroes + (capacity-1-outputReverseEnd))
-		for i := 0; i < prefixZeroes; i++ {
-			retStrRunes[i] = encodeTable[0]
-		}
-		for i, n := range output[outputReverseEnd+1:] {
-			retStrRunes[prefixZeroes+i] = encodeTable[n]
-		}
-		return string(retStrRunes)
 	}
+	retStrRunes := make([]rune, prefixZeroes + (capacity-1-outputReverseEnd))
+	for i := 0; i < prefixZeroes; i++ {
+		retStrRunes[i] = encodeTable[0]
+	}
+	for i, n := range output[outputReverseEnd+1:] {
+		retStrRunes[prefixZeroes+i] = encodeTable[n]
+	}
+	return string(retStrRunes)
 }
 
-// Decode with custom alphabet
+// Decode docode with custom alphabet
 func Decode(input string, alphabet *Alphabet)([]byte, error){
 	inputBytes := []rune(input)
 	inputLength := len(inputBytes)
@@ -129,7 +131,7 @@ func Decode(input string, alphabet *Alphabet)([]byte, error){
 			}
 		}
 		if carry == -1 {
-			return nil, Error_InvalidBase58String
+			return nil, ErrorInvalidBase58String
 		}
 		
 		outputIdx := capacity-1

@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"math"
 	"fmt"
-	"errors"
 	"time"
 	"math/rand"
 )
@@ -70,7 +69,7 @@ func TestRandCases(t *testing.T){
 
 	// generate 256 bytes
 	testBytes := make([]byte, r.Intn(1000))
-	for idx, _ := range testBytes {
+	for idx := range testBytes {
 		testBytes[idx] = byte(r.Intn(256))
 	}
 
@@ -136,7 +135,7 @@ func redixTrans256and58(input []byte, fromRedix uint32, toRedix uint32)([]byte, 
 	for inputPos := zeros; inputPos < len(input); inputPos++ {
 		carry := uint32(input[inputPos])
 		if carry >= fromRedix {
-			return nil, errors.New(fmt.Sprintf("input[%d]=%d invalid for target redix(%d)", inputPos, carry, fromRedix))
+			return nil, fmt.Errorf("input[%d]=%d invalid for target redix(%d)", inputPos, carry, fromRedix)
 		}
 		for idx, num := range output {
 			carry += fromRedix * uint32(num)
