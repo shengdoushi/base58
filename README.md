@@ -1,4 +1,4 @@
-
+[![Travis CI](https://travis-ci.org/shengdoushi/base58.svg?branch=master)](https://travis-ci.org/shengdoushi/base58)
 [![GoDoc](https://www.godoc.org/github.com/shengdoushi/base58?status.svg)](https://www.godoc.org/github.com/shengdoushi/base58)
 [![Go Report Card](https://goreportcard.com/badge/github.com/shengdoushi/base58)](https://goreportcard.com/report/github.com/shengdoushi/base58)
 
