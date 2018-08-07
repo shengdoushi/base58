@@ -72,7 +72,7 @@ func Encode(input []byte, alphabet *Alphabet) string {
 		carry := uint32(input[inputPos])
 
 		outputIdx := capacity - 1
-		for ; carry != 0 || outputIdx > outputReverseEnd; outputIdx-- {
+		for ; outputIdx > outputReverseEnd || carry != 0; outputIdx-- {
 			carry += (uint32(output[outputIdx]) << 8) // XX << 8 same as: 256 * XX
 			output[outputIdx] = byte(carry % 58)
 			carry /= 58
@@ -135,7 +135,7 @@ func Decode(input string, alphabet *Alphabet) ([]byte, error) {
 		}
 
 		outputIdx := capacity - 1
-		for ; carry != 0 || outputIdx > outputReverseEnd; outputIdx-- {
+		for ; outputIdx > outputReverseEnd || carry != 0; outputIdx-- {
 			carry += 58 * int(output[outputIdx])
 			output[outputIdx] = byte(uint32(carry) & 0xff) // same as: byte(uint32(carry) % 256)
 			carry >>= 8                                    // same as: carry /= 256
