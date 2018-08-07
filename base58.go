@@ -3,6 +3,7 @@ package base58
 import (
 	"errors"
 	"fmt"
+	"unicode/utf8"
 )
 
 // Errors
@@ -33,9 +34,8 @@ func (alphabet Alphabet) String() string {
 // NewAlphabet create a custom alphabet from 58-length string.
 // Note: len(rune(alphabet)) must be 58.
 func NewAlphabet(alphabet string) *Alphabet {
-	alphabetRunes := []rune(alphabet)
-	if len(alphabetRunes) != 58 {
-		panic(fmt.Sprintf("Base58 Alphabet length must 58, but %d", len(alphabetRunes)))
+	if utf8.RuneCountInString(alphabet) != 58 {
+		panic(fmt.Sprintf("Base58 Alphabet length must 58, but %d", utf8.RuneCountInString(alphabet)))
 	}
 
 	ret := new(Alphabet)
@@ -43,7 +43,9 @@ func NewAlphabet(alphabet string) *Alphabet {
 		ret.decodeTable[i] = -1
 	}
 	ret.unicodeDecodeTable = make([]rune, 0, 58*2)
-	for idx, ch := range alphabetRunes {
+	var idx int
+	var ch rune
+	for _, ch = range alphabet {
 		ret.encodeTable[idx] = ch
 		if ch >= 0 && ch < 256 {
 			ret.decodeTable[byte(ch)] = idx
@@ -51,6 +53,7 @@ func NewAlphabet(alphabet string) *Alphabet {
 			ret.unicodeDecodeTable = append(ret.unicodeDecodeTable, ch)
 			ret.unicodeDecodeTable = append(ret.unicodeDecodeTable, rune(idx))
 		}
+		idx++
 	}
 	return ret
 }
@@ -104,26 +107,33 @@ func Encode(input []byte, alphabet *Alphabet) string {
 
 // Decode docode with custom alphabet
 func Decode(input string, alphabet *Alphabet) ([]byte, error) {
-	inputBytes := []rune(input)
-	inputLength := len(inputBytes)
-	capacity := inputLength*733/1000 + 1 // log(58) / log(256)
+	capacity := utf8.RuneCountInString(input)*733/1000 + 1 // log(58) / log(256)
 	output := make([]byte, capacity)
 	outputReverseEnd := capacity - 1
+	var carry, outputIdx, i int
+	var target rune
 
 	// prefix 0
 	zero58Byte := alphabet.encodeTable[0]
 	prefixZeroes := 0
-	for prefixZeroes < inputLength && inputBytes[prefixZeroes] == zero58Byte {
-		prefixZeroes++
-	}
+	skipZeros := false
 
-	for inputPos := 0; inputPos < inputLength; inputPos++ {
-		carry := -1
-		target := inputBytes[inputPos]
+	for _, target = range input {
+		// collect prefix zeros
+		if !skipZeros {
+			if target == zero58Byte {
+				prefixZeroes++
+				continue
+			} else {
+				skipZeros = true
+			}
+		}
+
+		carry = -1
 		if target >= 0 && target < 256 {
 			carry = alphabet.decodeTable[target]
 		} else { // unicode
-			for i := 0; i < len(alphabet.unicodeDecodeTable); i += 2 {
+			for i = 0; i < len(alphabet.unicodeDecodeTable); i += 2 {
 				if alphabet.unicodeDecodeTable[i] == target {
 					carry = int(alphabet.unicodeDecodeTable[i+1])
 					break
@@ -134,7 +144,7 @@ func Decode(input string, alphabet *Alphabet) ([]byte, error) {
 			return nil, ErrorInvalidBase58String
 		}
 
-		outputIdx := capacity - 1
+		outputIdx = capacity - 1
 		for ; outputIdx > outputReverseEnd || carry != 0; outputIdx-- {
 			carry += 58 * int(output[outputIdx])
 			output[outputIdx] = byte(uint32(carry) & 0xff) // same as: byte(uint32(carry) % 256)
@@ -144,8 +154,6 @@ func Decode(input string, alphabet *Alphabet) ([]byte, error) {
 	}
 
 	retBytes := make([]byte, prefixZeroes+(capacity-1-outputReverseEnd))
-	for i, n := range output[outputReverseEnd+1:] {
-		retBytes[prefixZeroes+i] = n
-	}
+	copy(retBytes[prefixZeroes:], output[outputReverseEnd+1:])
 	return retBytes, nil
 }
