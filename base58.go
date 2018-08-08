@@ -67,14 +67,16 @@ func Encode(input []byte, alphabet *Alphabet) string {
 		prefixZeroes++
 	}
 
-	capacity := inputLength*138/100 + 1 // log256 / log58
+	capacity := (inputLength-prefixZeroes)*138/100 + 1 // log256 / log58
 	output := make([]byte, capacity)
 	outputReverseEnd := capacity - 1
 
-	for inputPos := prefixZeroes; inputPos < inputLength; inputPos++ {
-		carry := uint32(input[inputPos])
+	var carry uint32
+	var outputIdx int
+	for _, inputByte := range input[prefixZeroes:] {
+		carry = uint32(inputByte)
 
-		outputIdx := capacity - 1
+		outputIdx = capacity - 1
 		for ; outputIdx > outputReverseEnd || carry != 0; outputIdx-- {
 			carry += (uint32(output[outputIdx]) << 8) // XX << 8 same as: 256 * XX
 			output[outputIdx] = byte(carry % 58)
